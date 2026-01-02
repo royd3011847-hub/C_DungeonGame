@@ -9,7 +9,7 @@ I use these commands to play:
 ## HOW TO PLAY ##
 Your goal is to make it to the bottom right star on the map
 
-use w a s d to traverse the map
+use _w a s d_ to traverse the map
 
 if you get within 1 tile of a <span style = "color:red">Monster</span> (diagonals don't count) then you are forced to fight it
 
