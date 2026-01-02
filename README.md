@@ -15,4 +15,4 @@ if you get within 1 tile of a <span style = "color:red">Monster</span> (diagonal
 
 your score is kept by how much HP you have at the end
 
-*** Good luck traveler! ***
+***Good luck traveler!***
