@@ -20,19 +20,19 @@ Creature (*createMap())[MAP_SIZE]{
     }
     
     map[STARTING_ROW][STARTING_COL].t = PLAYER;
-    map[STARTING_ROW][STARTING_COL].hp = 50;
+    map[STARTING_ROW][STARTING_COL].hp = STARTING_HP;
     map[STARTING_ROW][STARTING_COL].damage = 5;
 
     int count = 0;
-    //monsters set so on average every 5th square is a monster
-    int monsterCount = (MAP_SIZE * MAP_SIZE)/5;
+    //monsters set so on average every 4th square is a monster
+    int monsterCount = (MAP_SIZE * MAP_SIZE)/4;
     while(count < monsterCount){
         int row = rand()%MAP_SIZE;
         int col = rand()%MAP_SIZE;
-        if(map[row][col].t==EMPTY && !(row == MAP_SIZE-1 && col == MAP_SIZE-1)){
+        if(map[row][col].t==EMPTY && !(row == MAP_SIZE-1 && col == MAP_SIZE-1) && !(row == 0 && col == 1) && !(row == 1 && col == 0)){
             map[row][col].t = monster;
             map[row][col].hp = rand()%8+8;
-            map[row][col].damage = 4;
+            map[row][col].damage = rand()%3+4;
             count++;
         }
     }
@@ -43,20 +43,25 @@ Creature (*createMap())[MAP_SIZE]{
 void printMap(Creature (*map)[MAP_SIZE]){
     for (int i = 0; i < MAP_SIZE; i++){
         for (int k = 0; k < MAP_SIZE; k++){
+            // Blue
             if(map[i][k].t == PLAYER){
-                printf("\033[34m◈\033[0m");  // Blue
+                printf("\033[34m◈\033[0m");  
             }
+            // Red
             else if(map[i][k].t == monster){
-                printf("\033[31m※\033[0m");  // Red
+                printf("\033[31m※\033[0m");  
             }
+            // Yellow
             else if (i == MAP_SIZE-1 && k == MAP_SIZE-1){
-                printf("\033[33m✭\033[0m");  // Yellow
+                printf("\033[33m✭\033[0m");  
             }
+            //default color
             else if (map[i][k].t == EMPTY){
-                printf("o");  // Default color
+                printf("o");
             }
+            // Green
             else if (map[i][k].t == VISITED){
-                printf("\033[32m⊗\033[0m");  // Green
+                printf("\033[32m⊗\033[0m"); 
             }
             printf(" ");
         }
@@ -134,3 +139,170 @@ int moveRight(Creature (*map)[MAP_SIZE], int row, int col){
 
     return 1;
 }
+
+int checkForMonsters(Creature (*map)[MAP_SIZE], int row, int col){
+    //printf("Func Ran\n");
+    Creature arr[3];
+    int monCount = 0;
+    if(map[row-1][col].t == monster && row != 0){
+        arr[monCount] = map[row-1][col];
+        monCount++;
+    }
+    if(map[row+1][col].t == monster && row != MAP_SIZE-1){
+        arr[monCount] = map[row+1][col];
+        monCount++;
+    }
+    if(map[row][col-1].t == monster && col != 0){
+        arr[monCount] = map[row][col-1];
+        monCount++;
+    }
+    if(map[row][col+1].t == monster && col != MAP_SIZE-1){
+        arr[monCount] = map[row][col+1];
+        monCount++;
+    }
+    if (!monCount){
+        return 51;
+    }
+    //printf("Right before battle\n");
+    int a = battle(arr, monCount, map[row][col]);
+    if(a <= 0){
+        return a; //lose
+    }
+    else{
+        printf("You won the battle!\n");
+        if(map[row-1][col].t == monster){
+            map[row-1][col].t = EMPTY;
+        }
+        if(map[row+1][col].t == monster){
+            map[row+1][col].t = EMPTY;
+        }
+        if(map[row][col-1].t == monster){
+            map[row][col-1].t = EMPTY;
+        }
+        if(map[row][col+1].t == monster){
+            map[row][col+1].t = EMPTY;
+        }
+        printMap(map);
+        return a;
+    }
+
+}
+
+int battle(Creature arr[], int monCount, Creature player){
+    //printf("Battle Init\n");
+    
+    char input;
+    int critMultiplier = 2;
+    int critDamage = (player.damage*critMultiplier);
+    if (!monCount){
+        printf("Error. func shouldn't have been called\n");
+        return -100;
+    }
+
+    int monstersAlive = 1;
+
+    if(monCount == 1){
+        printf("You ran into a monster!\n");
+        
+    }
+    else{
+        printf("You ran into %d monsters!\n", monCount);
+        
+    }
+
+    while(monstersAlive){
+        //player attack
+        do{
+            for (int i = 0; i < monCount; i++){
+            if(arr[i].hp > 0){
+                printf("Monster %d's HP: %d\n", i+1, arr[i].hp);
+            }
+            else{
+                printf("Monster %d: DEFEATED\n", i+1);
+            }
+        }
+        printf("Your HP: %d\n", player.hp);
+            char inputHolder;
+            printf("\nYour move! What will you do?\n");
+            printf("Stab (1)      slash (2)      info (i)\n");
+            scanf(" %c", &inputHolder);
+            input = inputHolder;
+            if(input == 'i'){
+                printf("Stabbing does damage to the first enemy with a chance to crit\n");
+                printf("Slashing does damage to all enamies\n");
+            }
+        } while(input != '1' && input != '2');
+        //stab
+        if(input == '1'){
+            printf("You chose to stab!");
+            int monsterAttacking = 0;
+            while(arr[monsterAttacking].hp <= 0){
+                monsterAttacking++;
+            }
+            if(rand()%2 == 1){
+                printf(" It's a critical hit!\n");
+                printf("You did %d damage!!\n", critDamage);
+                arr[monsterAttacking].hp -= critDamage;
+                
+            }
+            else{
+                printf(" You did %d damage!\n", player.damage);
+                arr[monsterAttacking].hp -= player.damage;
+            }
+            if(arr[monsterAttacking].hp<=0){
+                printf("Monster %d was slain!\n", monsterAttacking+1);
+            }
+        }
+        //slash
+        else{
+            printf("you chose to slash!");
+            printf(" You did %d damage!", player.damage);
+            for (int i = 0; i < monCount; i++){
+                arr[i].hp -= player.damage;
+                if(arr[i].hp <= 0){
+                    printf("Monster %d was slain!\n", i+1);
+                }
+            }
+
+        }
+        //check how many monsters are left alive
+        int monsLeft = 0;
+        for (int i = 0; i < monCount; i++){
+            if(arr[i].hp > 0){
+                monsLeft += 1;
+            }
+        }
+        if(!monsLeft){
+            printf("You won this battle!\n");
+            monstersAlive = 0;
+            break;
+        }
+        //monsters attack
+        printf("\n");
+        for (int i = 0; i < monCount; i++){
+            if(arr[i].hp >= 0){
+                printf("Monster %d attacks!\n", i+1);
+                if(rand()%2){
+                    printf("He hits and does %d damage!", arr[i].damage);
+                    player.hp -= arr[i].damage;
+                    if(player.hp <= 0){
+                        printf(" You died!!\n");
+                        return player.hp;
+                    }
+                    else{
+                        printf(" You have %d health left!\n", player.hp);
+                    }
+                }
+                else{
+                    printf("He misses!\n");
+                }
+            }
+        }
+
+        //shows stats after each round
+        
+    }
+
+    return player.hp;
+}
+

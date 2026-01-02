@@ -5,9 +5,11 @@
 #include <math.h>
 #include <ctype.h>
 #include "Dungeon.h"
+#include <windows.h>
 
 
 int main(){
+    SetConsoleOutputCP(CP_UTF8);
     int fair = 1;
     int Row = STARTING_ROW;
     int Col = STARTING_COL;
@@ -53,10 +55,22 @@ int main(){
                 break;
             
         }
+        int battleCheck = (checkForMonsters(map, Row, Col));
+        if (battleCheck != 51){
+            map[Row][Col].hp = battleCheck;
+        }
+        if(map[Row][Col].hp <= 0){
+            break;
+        }
+        
         
     }
-    if (fair){
-        printf("You won!!!");
+    if (fair && map[Row][Col].hp > 0){
+        printf("You won! ");
+        printf("Final HP: %d", map[Row][Col].hp);
+    }
+    else{
+        printf("You died! better luck next time :(");
     }
     return 0;
 }

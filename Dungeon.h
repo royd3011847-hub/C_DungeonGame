@@ -5,6 +5,7 @@
 #include <math.h>
 #include <ctype.h>
 #define MAP_SIZE 10
+#define STARTING_HP 25
 #define STARTING_ROW 0
 #define STARTING_COL 0
 
@@ -26,3 +27,5 @@ int moveUp(Creature (*map)[MAP_SIZE], int row, int col);
 int moveDown(Creature (*map)[MAP_SIZE], int row, int col);
 int moveLeft(Creature (*map)[MAP_SIZE], int row, int col);
 int moveRight(Creature (*map)[MAP_SIZE], int row, int col);
+int checkForMonsters(Creature (*map)[MAP_SIZE], int row, int col);
+int battle(Creature arr[], int count, Creature player);
