@@ -7,6 +7,14 @@
 #include "Dungeon.h"
 #include <windows.h>
 
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
 Creature (*createMap())[MAP_SIZE]{
 
     Creature (*map)[MAP_SIZE] = malloc(MAP_SIZE * sizeof(Creature[MAP_SIZE]));
@@ -42,7 +50,7 @@ Creature (*createMap())[MAP_SIZE]{
 }
 
 void printMap(Creature (*map)[MAP_SIZE]){
-    system("cls");
+    clearScreen();
     for (int i = 0; i < MAP_SIZE; i++){
         for (int k = 0; k < MAP_SIZE; k++){
             // Blue fpr player
