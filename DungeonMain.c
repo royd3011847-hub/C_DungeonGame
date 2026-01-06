@@ -17,9 +17,9 @@ int main(){
     Creature (*map)[MAP_SIZE] = createMap();
     printMap(map);
 
-    while (Row != MAP_SIZE-1 || Col != MAP_SIZE-1){
+    while (Row != MAP_SIZE - 1 || Col != MAP_SIZE - 1){
         char input;
-        printf("What direction will you go? (w, a, s, d)\n");
+        printf("What direction will you go? (\033[33mw, a, s, d\033[0m)\n");
         scanf(" %c", &input);
         input = tolower(input);
 
@@ -56,7 +56,7 @@ int main(){
             
         }
         int battleCheck = (checkForMonsters(map, Row, Col));
-        if (battleCheck != 51){
+        if (battleCheck != (STARTING_HP + 1)){
             map[Row][Col].hp = battleCheck;
         }
         if(map[Row][Col].hp <= 0){
@@ -67,7 +67,10 @@ int main(){
     }
     if (fair && map[Row][Col].hp > 0){
         printf("You won! ");
-        printf("Final HP: %d", map[Row][Col].hp);
+        printf("Final HP: %d\n", map[Row][Col].hp);
+        if(map[Row][Col].hp == STARTING_HP){
+            printf("FLAWLESS!!");
+        }
     }
     else{
         printf("You died! better luck next time :(");
