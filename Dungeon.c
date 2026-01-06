@@ -5,7 +5,9 @@
 #include <math.h>
 #include <ctype.h>
 #include "Dungeon.h"
-#include <windows.h>
+#ifdef _WIN32
+    #include <windows.h>
+#endif
 
 void clearScreen() {
     #ifdef _WIN32
