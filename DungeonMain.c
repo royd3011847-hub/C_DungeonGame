@@ -5,11 +5,13 @@
 #include <math.h>
 #include <ctype.h>
 #include "Dungeon.h"
-#include <windows.h>
+#ifdef WIN32
+    #include <windows.h>
+    SetConsoleOutputCP(CP_UTF8);
+#endif
 
 
 int main(){
-    SetConsoleOutputCP(CP_UTF8);
     int fair = 1;
     int Row = STARTING_ROW;
     int Col = STARTING_COL;
