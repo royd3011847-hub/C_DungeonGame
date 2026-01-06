@@ -5,6 +5,7 @@
 #include <math.h>
 #include <ctype.h>
 #include "Dungeon.h"
+#include <windows.h>
 
 Creature (*createMap())[MAP_SIZE]{
 
@@ -41,6 +42,7 @@ Creature (*createMap())[MAP_SIZE]{
 }
 
 void printMap(Creature (*map)[MAP_SIZE]){
+    system("cls");
     for (int i = 0; i < MAP_SIZE; i++){
         for (int k = 0; k < MAP_SIZE; k++){
             // Blue fpr player
