@@ -6,8 +6,6 @@
 #include <ctype.h>
 #define MAP_SIZE 10
 #define STARTING_HP 25
-#define STARTING_ROW 0
-#define STARTING_COL 0
 
 typedef enum {
     EMPTY,
@@ -22,7 +20,11 @@ typedef struct Creature{
     int damage;
 } Creature;
 Creature (*createMap())[MAP_SIZE];
-void printMap(Creature (*map)[MAP_SIZE]);
+
+void clearScreen();
+void printMap(Creature (*map)[MAP_SIZE], int hp);
+void playerInput(Creature (*map)[MAP_SIZE], int *row, int *col, char input);
+void printCurrentHP(int hp);
 int moveUp(Creature (*map)[MAP_SIZE], int row, int col);
 int moveDown(Creature (*map)[MAP_SIZE], int row, int col);
 int moveLeft(Creature (*map)[MAP_SIZE], int row, int col);

@@ -1,20 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include <ctype.h>
+
 #include "Dungeon.h"
 #ifdef _WIN32
     #include <windows.h>
 #endif
 
 void clearScreen() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
+    printf("\033[H\033[J");
 }
 
 Creature (*createMap())[MAP_SIZE]{
@@ -30,9 +21,9 @@ Creature (*createMap())[MAP_SIZE]{
         }
     }
     
-    map[STARTING_ROW][STARTING_COL].t = PLAYER;
-    map[STARTING_ROW][STARTING_COL].hp = STARTING_HP;
-    map[STARTING_ROW][STARTING_COL].damage = 5;
+    map[0][0].t = PLAYER;
+    map[0][0].hp = STARTING_HP;
+    map[0][0].damage = 5;
 
     int count = 0;
     //monsters set so on average every 4th square is a monster
@@ -51,11 +42,16 @@ Creature (*createMap())[MAP_SIZE]{
     return map;
 }
 
-void printMap(Creature (*map)[MAP_SIZE]){
-    clearScreen();
+void printCurrentHP(int hp){
+    hp <= 5 ? printf("Current HP: \033[31m%d\033[0m!\n", hp)
+     : printf("Current HP: \033[32m%d\033[0m!\n", hp);
+}
+
+void printMap(Creature (*map)[MAP_SIZE], int hp){
+    printCurrentHP(hp);
     for (int i = 0; i < MAP_SIZE; i++){
         for (int k = 0; k < MAP_SIZE; k++){
-            // Blue fpr player
+            // Blue for player
             if(map[i][k].t == PLAYER){
                 printf("\033[34m◈\033[0m");  
             }
@@ -81,6 +77,45 @@ void printMap(Creature (*map)[MAP_SIZE]){
     }
 }
 
+void playerInput(Creature (*map)[MAP_SIZE], int *row, int *col, char input){
+    switch (input) {
+        case 'w':
+            if(moveUp(map, *row, *col)){
+                (*row)--;
+            }
+            break;
+        case 'a':
+            if(moveLeft(map, *row, *col)){
+                (*col)--;
+            }
+            break;
+        case 's':
+            if(moveDown(map, *row, *col)){
+                (*row)++;
+            }
+            break;
+        case 'd':
+            if(moveRight(map, *row, *col)){
+                (*col)++;
+            }
+            break;
+        case 'i':
+            printf("\033[33m--------------------------------------------\033[0m\n");
+            printf("your goal is to make it to the star in the bottom right of the map\n");
+            printf("You get there by using 'w' 'a' 's' 'd' to move up, down, left, and right\n");
+            printf("The red monsters \033[31m※\033[0m are trying to kill you before you get there\n");
+            printf("if you get within one tile of a monster (diagonals don't count), it will fight you\n");
+            printf("if you are touching multiple monsters, you will fight multiple at once\n");
+            printf("good luck making it before your HP runs out!!\n");
+            printf("Input (b) to exit.\n");
+            printf("\033[33m--------------------------------------------\033[0m\n");
+            break;
+        default:
+            printf("invalid input. Try again.\n");
+            break;
+    }
+}
+
 
 int moveUp(Creature (*map)[MAP_SIZE], int row, int col){
     if(map[row][col].t != PLAYER){
@@ -96,7 +131,8 @@ int moveUp(Creature (*map)[MAP_SIZE], int row, int col){
     map[row][col].t = VISITED;
 
     printf("\n");
-    printMap(map);
+    clearScreen();
+    printMap(map, map[row-1][col].hp);
 
     return 1;
 }
@@ -113,7 +149,8 @@ int moveDown(Creature (*map)[MAP_SIZE], int row, int col){
     map[row][col].t = VISITED;
 
     printf("\n");
-    printMap(map);
+    clearScreen();
+    printMap(map, map[row+1][col].hp);
 
     return 1;
 }
@@ -130,7 +167,8 @@ int moveLeft(Creature (*map)[MAP_SIZE], int row, int col){
     map[row][col].t = VISITED;
 
     printf("\n");
-    printMap(map);
+    clearScreen();
+    printMap(map, map[row][col-1].hp);
 
     return 1;
 }
@@ -147,7 +185,8 @@ int moveRight(Creature (*map)[MAP_SIZE], int row, int col){
     map[row][col].t = VISITED;
 
     printf("\n");
-    printMap(map);
+    clearScreen();
+    printMap(map, map[row][col+1].hp);
 
     return 1;
 }
@@ -180,48 +219,47 @@ int checkForMonsters(Creature (*map)[MAP_SIZE], int row, int col){
     if(a <= 0){
         return a; //lose
     }
-    else{
-        printf("You won the battle!\n");
-        if(map[row-1][col].t == monster){
-            map[row-1][col].t = EMPTY;
-        }
-        if(map[row+1][col].t == monster){
-            map[row+1][col].t = EMPTY;
-        }
-        if(map[row][col-1].t == monster){
-            map[row][col-1].t = EMPTY;
-        }
-        if(map[row][col+1].t == monster){
-            map[row][col+1].t = EMPTY;
-        }
-        //one in 4 chance per monster
-        //player gets healed
-        int healed = 0;
-        for (int i = 0; i < monCount; i++){
-            if(!(rand()%4)){
-                printf("A monster was carrying a \033[31mHealth Potion\033[0m!\n");
-                if(map[row][col].hp >= STARTING_HP){
-                    printf("the potion doesn't do anything... you already are at max HP.\n");
-                }
-                else{
-                    int healAmount = rand()%3+3;
-                    healed = 1;
-                    map[row][col].hp += healAmount;
-                    printf("You heal \033[32m%d\033[0m HP!\n", healAmount);
-                    if(map[row][col].hp > STARTING_HP){
-                        map[row][col].hp = STARTING_HP;
-                    }
+    printf("You won the battle!\n");
+    map[row][col].hp = a;
+    if(map[row-1][col].t == monster){
+        map[row-1][col].t = EMPTY;
+    }
+    if(map[row+1][col].t == monster){
+        map[row+1][col].t = EMPTY;
+    }
+    if(map[row][col-1].t == monster){
+        map[row][col-1].t = EMPTY;
+    }
+    if(map[row][col+1].t == monster){
+        map[row][col+1].t = EMPTY;
+    }
+    //one in 4 chance per monster
+    //player gets healed
+    int healed = 0;
+    for (int i = 0; i < monCount; i++){
+        if(!(rand()%4)){
+            printf("A monster was carrying a \033[31mHealth Potion\033[0m!\n");
+            if(map[row][col].hp >= STARTING_HP){
+                printf("the potion doesn't do anything... you already are at max HP.\n");
+            }
+            else{
+                int healAmount = rand()%3+3;
+                healed = 1;
+                map[row][col].hp += healAmount;
+                printf("You heal \033[32m%d\033[0m HP!\n", healAmount);
+                if(map[row][col].hp > STARTING_HP){
+                    map[row][col].hp = STARTING_HP;
                 }
             }
         }
-        if(healed){
-            printf("Your total health is now \033[32m%d\033[0m\n", map[row][col].hp);
-        }
-
-        
-        printMap(map);
-        return a;
     }
+    if(healed){
+        printf("Your total health is now \033[32m%d\033[0m\n", map[row][col].hp);
+    }
+
+    
+    printMap(map, map[row][col].hp);
+    return a;
 
 }
 
@@ -259,7 +297,7 @@ int battle(Creature arr[], int monCount, Creature player){
                 printf("Monster %d: \033[33mDEFEATED\033[0m\n", i+1);
             }
         }
-        printf("Your HP: \033[32m%d\033[0m\n", player.hp);
+        printCurrentHP(player.hp);
             char inputHolder;
             printf("\nYour move! What will you do?\n");
             printf("Stab (\033[33m1\033[0m)      slash (\033[33m2\033[0m)      info (i)\n");
@@ -336,7 +374,6 @@ int battle(Creature arr[], int monCount, Creature player){
             }
         }
     }
-
     return player.hp;
 }
 
